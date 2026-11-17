@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f5f5f2">
+<title>Oddname — Username Engine</title>
+<style>
+:root{color-scheme:light;--bg:#f5f5f2;--paper:#fff;--ink:#171816;--muted:#777a72;--line:#e6e7e1;--accent:#315b48;--soft:#edf2ed;--shadow:0 12px 40px rgba(20,28,20,.055)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,select{font:inherit}button{cursor:pointer}
+.shell{max-width:1060px;margin:auto;padding:42px 28px 60px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:58px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:750;letter-spacing:-.04em;font-size:18px}
+.mark{width:25px;height:25px;border:1.5px solid var(--ink);border-radius:8px;display:grid;place-items:center;font-size:13px}
+.tag{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.hero{max-width:650px;margin-bottom:34px}.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1{font-size:clamp(38px,6vw,62px);line-height:1.02;letter-spacing:-.065em;margin:13px 0 16px;font-weight:720}
+.sub{color:var(--muted);font-size:16px;max-width:540px;margin:0}
+.workspace{display:grid;grid-template-columns:1fr 310px;gap:18px;align-items:start}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.results{padding:24px}.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.panel-title{font-size:13px;font-weight:700;letter-spacing:-.01em}.count{font-size:12px;color:var(--muted)}
+.list{display:grid;gap:9px}
+.name-row{min-height:57px;border:1px solid var(--line);border-radius:11px;padding:0 13px 0 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;transition:border .15s,background .15s}
+.name-row:hover{border-color:#b8c8bd;background:#fcfdfb}
+.username{font-size:16px;font-weight:620;letter-spacing:-.025em;overflow-wrap:anywhere}
+.row-actions{display:flex;gap:5px;flex-shrink:0}
+.icon-btn{width:34px;height:34px;border:0;background:transparent;color:#777a72;border-radius:8px;display:grid;place-items:center}
+.icon-btn:hover{background:var(--soft);color:var(--accent)}
+.icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.empty{padding:34px 12px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:11px}
+.controls{padding:22px;position:sticky;top:18px}
+.control-title{font-size:13px;font-weight:700;margin-bottom:19px}
+.field{margin:0 0 18px}.field-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+label,.field-label{font-size:12px;font-weight:650;color:#4e514b}
+.value{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+select,input[type=number]{width:100%;border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px 11px;color:var(--ink);outline:none}
+select:focus,input:focus{border-color:#789482;box-shadow:0 0 0 3px #edf2ed}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:10px 8px;margin-top:4px}
+.check{display:flex;gap:8px;align-items:center;font-size:12px;color:#555950}
+input[type=checkbox]{accent-color:var(--accent);width:14px;height:14px}
+.generate{width:100%;border:0;border-radius:10px;background:var(--ink);color:#fff;padding:13px 16px;font-weight:650;display:flex;align-items:center;justify-content:center;gap:9px;margin-top:8px;transition:transform .15s,background .15s}
+.generate:hover{background:var(--accent);transform:translateY(-1px)}
+.generate svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8}
+.secondary{width:100%;border:1px solid var(--line);background:white;color:#555950;border-radius:10px;padding:10px;margin-top:9px;font-size:12px;font-weight:600}
+.secondary:hover{background:#f8f9f6}
+.footer{display:flex;justify-content:space-between;gap:15px;margin-top:22px;color:var(--muted);font-size:11px}
+.toast{position:fixed;bottom:24px;left:50%;transform:translate(-50%,15px);opacity:0;pointer-events:none;background:#20241f;color:white;padding:10px 15px;border-radius:9px;font-size:12px;transition:.2s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media(max-width:760px){.shell{padding:25px 16px 40px}header{margin-bottom:43px}.workspace{grid-template-columns:1fr}.controls{position:static;grid-row:1}.results{grid-row:2}.hero{margin-bottom:25px}.results{padding:18px}.controls{padding:19px}}
+</style>
+</head>
+<body>
+<div class="shell">
+<header><div class="brand"><span class="mark">∴</span> oddname</div><div class="tag">A small username machine</div></header>
+<section class="hero">
+  <div class="eyebrow">Random, not recycled</div>
+  <h1>Names with<br>no particular reason.</h1>
+  <p class="sub">A little procedural engine for strange, sharp, memorable usernames. No prompts, no generated filler — just curated word banks and controlled randomness.</p>
+</section>
+<main class="workspace">
+  <section class="panel results">
+    <div class="panel-head"><div class="panel-title">Your batch</div><div class="count" id="countLabel">12 names</div></div>
+    <div class="list" id="results" aria-live="polite"></div>
+    <div class="footer"><span id="batchNote">Fresh combinations every run.</span><span>Click a name's copy icon to keep it.</span></div>
+  </section>
+  <aside class="panel controls">
+    <div class="control-title">Tune the chaos</div>
+    <div class="field"><div class="field-head"><label for="style">Construction</label></div>
+      <select id="style">
+        <option value="mixed">Unpredictable mix</option><option value="odd">Odd pairings</option><option value="alliteration">Alliteration</option><option value="verb">Action + object</option><option value="compound">Compressed compounds</option><option value="fragment">Invented fragments</option>
+      </select>
+    </div>
+    <div class="field"><div class="field-head"><label for="quantity">Batch size</label><span class="value" id="quantityValue">12</span></div><input id="quantity" type="range" min="4" max="30" value="12" step="1"></div>
+    <div class="field"><div class="field-head"><label for="length">Maximum length</label><span class="value" id="lengthValue">18 chars</span></div><input id="length" type="range" min="10" max="24" value="18" step="1"></div>
+    <div class="field"><div class="field-head"><label for="case">Letter style</label></div><select id="case"><option value="lower">lowercase</option><option value="camel">camelCase</option><option value="upper">UPPERCASE</option></select></div>
+    <div class="field"><div class="field-head"><label for="separator">Separator</label></div><select id="separator"><option value="">None</option><option value="_">Underscore</option><option value=".">Dot</option><option value="-">Hyphen</option></select></div>
+    <div class="field">
+      <div class="field-head"><span class="field-label">Extras</span></div>
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="numbers"> Add digits</label>
+        <label class="check"><input type="checkbox" id="digits" checked> Rare doubles</label>
+        <label class="check"><input type="checkbox" id="avoidVowels"> Vowel-light</label>
+        <label class="check"><input type="checkbox" id="noRepeat" checked> Unique batch</label>
+      </div>
+    </div>
+    <button class="generate" id="generate"><svg viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.7-2L20 12M4 12l2.7 5a7 7 0 0 0 11.7-2"/></svg> Generate usernames</button>
+    <button class="secondary" id="copyAll">Copy entire batch</button>
+  </aside>
+</main>
+</div>
+<div class="toast" id="toast">Copied</div>
+<script>
+(() => {
+'use strict';
+// Curated vocabulary deliberately avoids common name-generator tropes.
+const A = ['brackish','crooked','velvet','feral','static','mossy','hollow','rusted','sleepy','brittle','wonky','ashen','gritty','lopsided','dusky','wiry','muffled','soggy','oddly','fallow','granular','wonky','cryptic','tarnished','itchy','sallow','jagged','stubborn','wobbly','bleary','spare','fizzy','dusty','knotted','murky','offbeat','shallow','twitchy','uneven','frosted','smudged','wilted','erratic','crooked','dented','ferrous','nocturnal','blunt','papery','bizarre'];
+const N = ['turnip','spindle','thimble','gutter','pigeon','mackerel','teacup','rivet','shoelace','pickle','badger','hinge','mothball','sardine','crumpet','cobweb','doorknob','marmot','inkwell','bramble','socket','walnut','tinfoil','cricket','lantern','gravel','sprocket','figment','dustpan','cinder','lozenge','stapler','muffin','goblin','puddle','kettle','raccoon','velcro','beetle','quarry','acorn','ladle','wicket','plankton','gasket','thistle','biscuit','rubble','shoebox','clam'];
+const V = ['misplace','unravel','shuffle','gnaw','juggle','smuggle','sidestep','crumple','rattle','wobble','pickle','stumble','ferment','scramble','pocket','tangle','nudge','muddle','squint','fold','skitter','clatter','drizzle','mangle','hoard','fumble'];
+const O = ['receipt','compass','waffle','teapot','marble','shoelace','turnstile','pancake','paperclip','suitcase','doormat','mousetrap','cabbage','trombone','umbrella','sardine','hourglass','screwdriver','napkin','bicycle','blender','sidewalk','hamster','bookmark','pocketwatch'];
+const FRAG_A = ['vex','grit','plim','skel','brum','tarn','wex','drim','krul','misk','zorp','thrum','glint','snib','flarn','quib','dreg','vask','pronk','yelm'];
+const FRAG_B = ['ettle','wick','umbo','indle','asket','ubble','orn','izzle','onk','apter','eeble','ocket','indle','umpet','abble','orrel','uster','indle','avern','oggin'];
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+function fragment(){return pick(FRAG_A)+pick(FRAG_B)}
+function build(style, sep){
+  let mode=style==='mixed'?pick(['odd','alliteration','verb','compound','fragment','odd','verb']):style;
+  if(mode==='odd') return [pick(A),pick(N)].join(sep);
+  if(mode==='alliteration'){
+    let first=pick(A), pool=N.filter(x=>x[0]===first[0]);
+    return [first,pool.length?pick(pool):pick(N)].join(sep);
+  }
+  if(mode==='verb') return [pick(V),pick(O)].join(sep);
+  if(mode==='compound'){
+    let x=pick(N), y=pick(N.filter(z=>z!==x));
+    return x.slice(0,Math.min(5,x.length))+y.slice(0,Math.min(5,y.length));
+  }
+  return fragment();
+}
+function transform(raw){
+ const sep=document.querySelector('#separator').value;
+ let parts=raw.split(/[_.-]/), s=raw;
+ if(document.querySelector('#avoidVowels').checked) s=s.replace(/[aeiou]/g,'');
+ if(document.querySelector('#digits').checked && Math.random()<.23) s=s.replace(/([bcdfghjklmnpqrstvwxyz])\1+/g,'$1');
+ if(document.querySelector('#numbers').checked) s+=String(Math.floor(Math.random()*90)+10);
+ const style=document.querySelector('#case').value;
+ if(style==='camel') s=s.split(/[_.-]/).map((p,i)=>i?cap(p):p).join('');
+ if(style==='upper') s=s.toUpperCase();
+ return s;
+}
+function generate(){
+ const amount=+document.querySelector('#quantity').value, max=+document.querySelector('#length').value;
+ const style=document.querySelector('#style').value, sep=document.querySelector('#separator').value;
+ const unique=document.querySelector('#noRepeat').checked, seen=new Set(), names=[];
+ let attempts=0;
+ while(names.length<amount && attempts<amount*100){
+   attempts++;
+   let raw=build(style,sep), name=transform(raw);
+   if(name.length>max || name.length<3) continue;
+   if(unique && seen.has(name.toLowerCase())) continue;
+   seen.add(name.toLowerCase()); names.push(name);
+ }
+ const host=document.querySelector('#results'); host.innerHTML='';
+ if(!names.length){host.innerHTML='<div class="empty">No combinations fit those settings. Try a longer maximum length.</div>';}
+ names.forEach(name=>{
+   const row=document.createElement('div');row.className='name-row';
+   const text=document.createElement('span');text.className='username';text.textContent=name;
+   const actions=document.createElement('div');actions.className='row-actions';
+   const copy=document.createElement('button');copy.className='icon-btn';copy.type='button';copy.title='Copy username';copy.setAttribute('aria-label','Copy '+name);
+   copy.innerHTML='<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"/></svg>';
+   copy.addEventListener('click',()=>copyText(name));
+   actions.append(copy);row.append(text,actions);host.append(row);
+ });
+ document.querySelector('#countLabel').textContent=names.length+' names';
+ document.querySelector('#batchNote').textContent=names.length===amount?'Fresh combinations every run.':`Found ${names.length} within the current length limit.`;
+ window.currentBatch=names;
+}
+async function copyText(text){
+ try{await navigator.clipboard.writeText(text);toast('Copied to clipboard');}
+ catch(e){const t=document.createElement('textarea');t.value=text;document.body.append(t);t.select();document.execCommand('copy');t.remove();toast('Copied');}
+}
+let toastTimer;
+function toast(msg){const el=document.querySelector('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),1500)}
+document.querySelector('#generate').addEventListener('click',generate);
+document.querySelector('#quantity').addEventListener('input',e=>document.querySelector('#quantityValue').textContent=e.target.value);
+document.querySelector('#length').addEventListener('input',e=>document.querySelector('#lengthValue').textContent=e.target.value+' chars');
+document.querySelector('#copyAll').addEventListener('click',()=>copyText((window.currentBatch||[]).join('\n')));
+generate();
+})();
+</script>
+</body>
+</html>
